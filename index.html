@@ -3,331 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CN</title>
-<style>
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
-body{
-    margin:0;
-    min-height:100vh;
-    background:#000;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-}
-#rain{
-    position:fixed;
-    top:0;left:0;
-    width:100%;height:100%;
-    pointer-events:none;
-    z-index:1;
-}
-/* 左侧大幅左移 + 纯正竖排 汉字直立从上到下 */
-#leftText{
-    position:fixed;
-    left:12px;
-    top:50%;
-    transform:translateY(-50%);
-    writing-mode: vertical-lr;
-    text-orientation: upright;
-    font-size:15px;
-    line-height: 2.8;
-    z-index:2;
-    white-space:pre;
-    animation:rainbow 7s linear infinite;
-    text-shadow:0 0 10px currentColor;
-}
-/* 无限流动彩虹彩色 */
-@keyframes rainbow{
-    0%{color:#ff3366;}
-    14%{color:#ff9933;}
-    28%{color:#ffff33;}
-    42%{color:#33ff66;}
-    56%{color:#3399ff;}
-    70%{color:#6633ff;}
-    84%{color:#ff33ff;}
-    100%{color:#ff3366;}
-}
-.container{
-    width:100%;max-width:380px;
-    background:rgba(22,22,22,0.85);
-    backdrop-filter:blur(12px);
-    padding:32px 28px;
-    border-radius:18px;
-    position:relative;z-index:3;
-}
-@keyframes rainbowTitle{
-    0%{background-position:0% 50%}
-    50%{background-position:100% 50%}
-    100%{background-position:0% 50%}
-}
-.title{
-    text-align:center;
-    font-size:26px;font-weight:700;margin-bottom:30px;
-    background:linear-gradient(90deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
-    background-size:600% 600%;
-    background-clip:text;-webkit-background-clip:text;
-    color:transparent;animation:rainbowTitle 8s linear infinite;
-}
-.input-box{width:100%;margin-bottom:22px}
-input{
-    width:100%;padding:15px 18px;
-    background:rgba(35,35,35,0.6);
-    border:1px solid rgba(80,80,80,0.5);
-    border-radius:12px;font-size:16px;outline:none;color:#fff;
-}
-button{
-    width:100%;padding:16px;border:none;border-radius:12px;
-    font-size:17px;font-weight:600;cursor:pointer;
-    background:linear-gradient(90deg,#ff0000,#ffff00,#00ff00,#00ffff,#0000ff,#ff00ff,#ff0000);
-    background-size:600% 600%;
-    background-clip:text;-webkit-background-clip:text;
-    color:transparent;animation:rainbowTitle 6s linear infinite;
-    background-color:rgba(40,40,40,0.3);
-}
-button:active{transform:scale(0.97)}
-.tip{
-    margin-top:20px;text-align:center;font-size:15px;height:22px;font-weight:500;
-}
-.success{
-    background:linear-gradient(90deg,#4ade80,#86efac,#4ade80);
-    background-size:200% 200%;
-    background-clip:text;-webkit-background-clip:text;
-    color:transparent;animation:rainbowTitle 3s linear infinite;
-}
-.error{
-    background:linear-gradient(90deg,#ef4444,#f87171,#ef4444);
-    background-size:200% 200%;
-    background-clip:text;-webkit-background-clip:text;
-    color:transparent;
-}
-#musicBox{
-    display:none;
-    width:100%;
-    margin-top:25px;
-}
-audio{
-    width:100%;
-    border-radius:12px;
-}
-#warn{
-    display:none;
-    color:#ff2222;
-    text-align:center;font-size:14px;margin-top:12px;
-}
-</style>
-</head>
-<body>
-<div id="leftText">
-密码：明知道你不爱我为什么我还要爱你
-
-后来我才明白
-热情耗尽只剩礼貌
-我什么都不图你
-最后却什么都得不到
-原来不合适真的很难熬
-爱意随风起风止意难平
-遗憾归遗憾总不能一直停在原地吧
-你敷衍的那么明显
-我怎么会看不出来
-我耗尽所有真心
-最后只换来一身伤痕
-所有的温柔眷恋
-都是我对你过剩的喜欢
-人一旦付出真心
-就注定满盘皆输
-我怀念的不是你
-是你给的曾经
-深情从来都是被辜负
-只有薄情才会被反复思念
-我什么都没忘
-只是有些事只适合收藏
-</div>
-
-<canvas id="rain"></canvas>
-<div class="container">
-<div class="title">CN探长</div>
-<div id="warn">恶意爆破检测 | 访问已被永久封禁</div>
-<div class="input-box">
-<input type="text" id="card" placeholder="请输入卡密">
-</div>
-<button onclick="checkCard()">核验授权</button>
-<div id="msg"></div>
-<div id="musicBox">
-<audio controls loop id="music">
-<source src="碎.mp3" type="audio/mpeg">
-
-</div>
-</div>
-
-<script>
-const canvas = document.getElementById('rain');
-const ctx = canvas.getContext('2d');
-let w = canvas.width = innerWidth;
-let h = canvas.height = innerHeight;
-window.addEventListener('resize',()=>{
-    w = canvas.width = innerWidth;
-    h = canvas.height = innerHeight;
-});
-let drops = [];
-class Rain{
-    constructor(){
-        this.x = Math.random()*w;
-        this.y = Math.random()*-h;
-        this.speed = Math.random()*5+4;
-        this.len = Math.random()*15+8;
-    }
-    update(){
-        this.y += this.speed;
-        if(this.y>h){
-            this.y = Math.random()*-h;
-            this.x = Math.random()*w;
-        }
-    }
-    draw(){
-        ctx.beginPath();
-        ctx.moveTo(this.x,this.y);
-        ctx.lineTo(this.x,this.y+this.len);
-        ctx.strokeStyle = 'rgba(120, 180, 255, 0.35)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-    }
-}
-for(let i=0;i<120;i++) drops.push(new Rain());
-function loop(){
-    ctx.clearRect(0,0,w,h);
-    drops.forEach(d=>{d.update();d.draw();});
-    requestAnimationFrame(loop);
-}
-loop();
-
-const secConfig = {
-    reqPerSec:2,
-    maxReqTotal:40,
-    banTemp:180,
-    spamThreshold:10,
-    clickGap:120,
-    maxError:5,
-    permanentBan:true
-};
-let reqLog = [];
-let totalReq = 0;
-let globalBan = false;
-let errorCount = 0;
-const warnBox = document.getElementById('warn');
-const safeCardDatabase = new Map([['明知道你不爱我为什么我还要爱你','master']]);
-
-function clearExpire(){
-    const now = Date.now();
-    reqLog = reqLog.filter(t=>now-t<1000);
-}
-function antiAttack(){
-    if(globalBan){
-        document.body.style.opacity = 0.3;
-        warnBox.style.display = 'block';
-        return false;
-    }
-    const now = Date.now();
-    clearExpire();
-    reqLog.push(now);
-    totalReq++;
-    if(reqLog.length > secConfig.reqPerSec || totalReq > secConfig.maxReqTotal){
-        globalBan = true;
-        warnBox.style.display = 'block';
-        document.body.style.pointerEvents = 'none';
-        return false;
-    }
-    return true;
-}
-(function hookAllRequest(){
-    const f = window.fetch;
-    window.fetch = function(){
-        if(!antiAttack()) return new Promise(()=>{});
-        return f.apply(this,arguments);
-    };
-    const xhrOpen = XMLHttpRequest.prototype.open;
-    XMLHttpRequest.prototype.open = function(){
-        if(!antiAttack()) return;
-        return xhrOpen.apply(this,arguments);
-    };
-})();
-let lastClick = 0;
-document.addEventListener('click',e=>{
-    const now = Date.now();
-    if(now-lastClick < secConfig.clickGap){
-        e.preventDefault();
-        e.stopImmediatePropagation();
-        antiAttack();
-    }
-    lastClick = now;
-},true);
-const badUA = ['bot','spider','curl','wget','python','node','scan','hack','mass','crawler'];
-const ua = navigator.userAgent.toLowerCase();
-for(let s of badUA){
-    if(ua.includes(s)){
-        globalBan = true;
-        warnBox.style.display = 'block';
-    }
-}
-function antiCrackCheck(){
-    if(errorCount >= secConfig.maxError){
-        globalBan = true;
-        warnBox.style.display = 'block';
-        document.body.style.pointerEvents = 'none';
-        return false;
-    }
-    return true;
-}
-
-const music = document.getElementById('music');
-const musicBox = document.getElementById('musicBox');
-window.onload = function(){
-    if(globalBan) return;
-    music.loop = true;
-    music.play().catch(()=>{
-        document.body.addEventListener('click',()=>{music.play();},{once:true});
-    });
-};
-
-function checkCard(){
-    if(globalBan){
-        warnBox.style.display = 'block';
-        return;
-    }
-    if(!antiAttack() || !antiCrackCheck()) return;
-    let card = document.getElementById("card").value.trim();
-    let msg = document.getElementById("msg");
-    if(card === ""){
-        msg.className = "tip error";
-        msg.innerText = "请输入卡密";
-        errorCount++;
-        return;
-    }
-    if(safeCardDatabase.has(card)){
-        msg.className = "tip success";
-        msg.innerText = "验证成功";
-        musicBox.style.display = "block";
-        errorCount = 0;
-    }else{
-        errorCount++;
-        let remain = secConfig.maxError - errorCount;
-        msg.className = "tip error";
-        msg.innerText = `卡密错误 剩余次数:${remain}`;
-        musicBox.style.display = "none";
-        if(remain <= 0){
-            globalBan = true;
-            warnBox.style.display = 'block';
-        }
-    }
-}
-</script>
-</body>
-</html><!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CN安全防御系统</title>
+<title>CN探长 安全防御系统</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
 body{
@@ -337,151 +13,269 @@ body{
     height:100vh;
     transition:all 0.2s;
 }
-/* 顶部攻击警报滚动条 */
+
+/* ========== CN卡密验证弹窗 ========== */
+#popupCard{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.95);z-index:99999;
+    display:flex;justify-content:center;align-items:center;
+}
+.popup-box{
+    background:#050505;border:2px solid #00ff00;
+    padding:35px;border-radius:12px;min-width:330px;
+    text-align:center;box-shadow:0 0 35px #0f0;
+}
+.popup-box h2{color:#0f0;margin-bottom:22px;font-size:22px;}
+.popup-box input{
+    width:100%;padding:14px;margin:12px 0;
+    background:#121212;color:#0f0;border:1px solid #0f0;
+    border-radius:6px;font-size:16px;outline:none;
+}
+.popup-box button{
+    padding:13px 28px;border:none;background:#0f0;
+    color:#000;font-weight:bold;border-radius:6px;
+    margin-top:12px;cursor:pointer;font-size:15px;
+}
+#tip{color:red;margin-top:12px;font-size:14px;}
+
+/* ========== 全屏下雨流水特效 ========== */
+#rainCanvas{
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    pointer-events:none;z-index:1;
+}
+
+/* ========== 攻击告警系统 ========== */
 #attackAlert{
     position:fixed;top:0;left:0;width:100%;height:32px;
     background:#200000;color:#ff2222;line-height:32px;
     text-align:center;white-space:nowrap;overflow:hidden;
-    display:none;z-index:9999;font-weight:bold;
+    display:none;z-index:9998;font-weight:bold;
 }
-/* 攻击全屏红色闪烁遮罩 */
 #attackMask{
     position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(255,0,0,0.15);z-index:9998;
+    background:rgba(255,0,0,0.15);z-index:9997;
     display:none;pointer-events:none;
 }
-/* 安全护盾绿色遮罩 */
 #defenseMask{
     position:fixed;top:0;left:0;width:100%;height:100%;
-    background:rgba(0,255,34,0.1);z-index:9998;
+    background:rgba(0,255,34,0.1);z-index:9997;
     display:none;pointer-events:none;
 }
-/* 中心提示面板 */
-.box{
+
+/* ========== 主系统界面 ========== */
+#mainBox{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     border:2px solid #ff0000;background:#0a0000;padding:40px 30px;
     border-radius:10px;box-shadow:0 0 40px #ff0000;
-    min-width:340px;text-align:center;
+    min-width:340px;text-align:center;display:none;z-index:2;
 }
-.box h2{
-    color:#ff3333;font-size:26px;margin-bottom:20px;
-}
-.status{
-    font-size:18px;margin:15px 0;color:#ff5555;
-}
-/* 按钮区域 */
-.btn-box{
-    margin-top:30px;display:flex;gap:20px;justify-content:center;
-}
-button{
-    padding:12px 25px;border:none;border-radius:6px;
-    font-size:16px;font-weight:bold;cursor:pointer;
-    transition:0.3s;
-}
+#mainBox h2{color:#ff3333;font-size:26px;margin-bottom:20px;}
+.status{font-size:18px;margin:15px 0;color:#ff5555;}
+.btn-box{margin-top:30px;display:flex;gap:20px;justify-content:center;}
+button{padding:12px 25px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;font-size:15px;}
+
 /* 防御按钮 */
 #defenseBtn{
-    background:#052205;color:#00ff22;
-    border:1px solid #00ff22;
-    box-shadow:0 0 12px #00ff22;
+    background:#052205;color:#00ff22;border:1px solid #00ff22;box-shadow:0 0 12px #00ff22;
 }
-#defenseBtn:hover{
-    background:#004400;box-shadow:0 0 20px #00ff22;
-}
-/* 反攻击按钮 */
+/* 反击按钮 */
 #counterBtn{
-    background:#220000;color:#ff2222;
-    border:1px solid #ff2222;
-    box-shadow:0 0 12px #ff2222;
+    background:#220000;color:#ff2222;border:1px solid #ff2222;box-shadow:0 0 12px #ff2222;
 }
-#counterBtn:hover{
-    background:#440000;box-shadow:0 0 20px #ff2222;
+/* 核心规则：攻击未触发前，按钮全部锁定置灰不可点击 */
+#defenseBtn:disabled,#counterBtn:disabled{
+    opacity:0.3;box-shadow:none;cursor:not-allowed;
 }
-/* 反击日志文字 */
-.log{
-    margin-top:25px;color:#ff8888;font-size:14px;height:40px;
-}
-<!-- 攻击警报滚动条 -->
-<div id="attackAlert">
-⚠️ 警告！检测到外部网络攻击！系统正在遭受入侵！⚠️
+.log{margin-top:25px;color:#ff8888;font-size:14px;height:80px;line-height:1.6;}
+</style>
+</head>
+<body>
+
+<!-- 1. CN专属卡密验证弹窗 -->
+<div id="popupCard">
+    <div class="popup-box">
+        <h2>🔐 CN探长 专属卡密验证</h2>
+        <input type="text" id="key" placeholder="请输入授权卡密">
+        <button onclick="checkKey()">✅ 验证进入系统</button>
+        <div id="tip"></div>
+    </div>
 </div>
-<!-- 攻击红闪层 -->
+
+<!-- 2. 全屏下雨流水背景特效 -->
+<canvas id="rainCanvas"></canvas>
+
+<!-- 3. 攻击告警层 -->
+<div id="attackAlert">⚠️ 警告！检测到外部网络攻击！系统正在遭受入侵！⚠️</div>
 <div id="attackMask"></div>
-<!-- 防御绿色护盾层 -->
 <div id="defenseMask"></div>
 
-<div class="box">
-    <h2>系统安全监测中心</h2>
-    <div class="status" id="status">当前网络状态：安全</div>
-
+<!-- 4. 安全防御主界面 -->
+<div id="mainBox">
+    <h2>CN安全防御监测中心</h2>
+    <div class="status" id="status">当前网络状态：安全监测中</div>
     <div class="btn-box">
-        <button id="defenseBtn">🛡️ 开启防御</button>
-        <button id="counterBtn">⚔️ 反攻击反击</button>
+        <button id="defenseBtn" disabled>🛡️ 开启防御</button>
+        <button id="counterBtn" disabled>⚔️ 反攻击反击</button>
     </div>
-
-    <div class="log" id="log"></div>
+    <div class="log" id="log">系统初始化完成，正在等待网络安全检测...</div>
 </div>
 
+<!-- 5. 你的专属背景音乐 碎.mp3 -->
+<audio id="bgMusic" loop>
+    <source src="碎.mp3" type="audio/mpeg">
+
+
 <script>
-const attackAlert = document.getElementById('attackAlert');
-const attackMask = document.getElementById('attackMask');
-const defenseMask = document.getElementById('defenseMask');
-const status = document.getElementById('status');
-const log = document.getElementById('log');
-const defenseBtn = document.getElementById('defenseBtn');
-const counterBtn = document.getElementById('counterBtn');
-
-let isAttacked = false;
-let isDefensed = false;
-
-// 模拟：页面加载后自动触发被攻击警报
-setTimeout(()=>{
-    isAttacked = true;
-    attackAlert.style.display = 'block';
-    attackMask.style.display = 'block';
-    status.innerText = '⚠️ 危险！正在遭受外部攻击！';
-    status.style.color = '#ff2222';
-    log.innerText = '攻击源IP正在尝试入侵系统...';
-
-    // 红色闪烁动画
-    function redFlash(){
-        if(!isAttacked) return;
-        attackMask.style.opacity = attackMask.style.opacity == '0.3' ? '0.1' : '0.3';
-        setTimeout(redFlash, 300);
+// ========== 一、CN专属卡密授权系统 ==========
+const validKeys = ["CN774", "CNNB", "CN探长", "CNBB"];
+function checkKey(){
+    const inputKey = document.getElementById("key").value.trim();
+    const tipText = document.getElementById("tip");
+    if(validKeys.includes(inputKey)){
+        tipText.style.color = "#0f0";
+        tipText.innerText = "✅ 卡密授权成功！系统正在加载...";
+        setTimeout(()=>{
+            // 隐藏卡密弹窗，显示主界面
+            document.getElementById("popupCard").style.display = "none";
+            document.getElementById("mainBox").style.display = "block";
+            // 启动全部背景特效：音乐 + 下雨
+            startBgMusic();
+            startRainEffect();
+            // 页面加载完成后，延迟自动触发攻击警报
+            setTimeout(triggerAttackWarning, 1500);
+        }, 800);
+    }else{
+        tipText.style.color = "red";
+        tipText.innerText = "❌ 无效卡密！授权码：CN774 / CNNB / CN探长";
     }
-    redFlash();
-}, 1500);
-
-// 防御按钮功能
-defenseBtn.onclick = function(){
-    if(!isAttacked){
-        log.innerText = '当前无攻击，无需启动防御';
-        return;
-    }
-    isDefensed = true;
-    // 关闭攻击警报，开启防御护盾
-    attackAlert.style.display = 'none';
-    attackMask.style.display = 'none';
-    defenseMask.style.display = 'block';
-    status.innerText = '✅ 防御护盾已开启！攻击已全部拦截';
-    status.style.color = '#00ff22';
-    log.innerText = '防火墙已启动，所有恶意连接已屏蔽';
 }
 
-// 反攻击按钮功能
-counterBtn.onclick = function(){
-    if(!isAttacked){
-        log.innerText = '无攻击源，无法进行反击';
-        return;
-    }
-    log.innerText = '🔴 正在定位攻击源...';
-    setTimeout(()=>{
-        log.innerText = '⚔️ 反击启动！正在反向渗透攻击源';
-    },800);
-    setTimeout(()=>{
-        log.innerText = '✅ 反击完成！对方网络已被压制';
-    },2000);
+// ========== 二、专属背景音乐 碎.mp3 循环播放 ==========
+function startBgMusic(){
+    const music = document.getElementById("bgMusic");
+    music.volume = 0.35;
+    // 兼容手机浏览器点击交互自动播放限制
+    const autoPlay = () => {
+        music.play().catch(()=>{
+            document.addEventListener("click", ()=>{music.play()}, {once:true});
+        });
+    };
+    autoPlay();
 }
-</script>
-</body>
+
+// ========== 三、全屏下雨流水动态特效 ==========
+function startRainEffect(){
+    const canvas = document.getElementById("rainCanvas");
+    const ctx = canvas.getContext("2d");
+    let canvasWidth = canvas.width = window.innerWidth;
+    let canvasHeight = canvas.height = window.innerHeight;
+    const raindropArr = [];
+    // 生成雨滴数量
+    const dropCount = 220;
+
+    // 初始化雨滴参数
+    for(let i = 0; i < dropCount; i++){
+        raindropArr.push({
+            x: Math.random() * canvasWidth,
+            y: Math.random() * canvasHeight,
+            speedY: 4 + Math.random() * 7,
+            dropLength: 12 + Math.random() * 18,
+            opacity: 0.4 + Math.random() * 0.5
+        });
+    }
+
+    // 雨滴渲染动画
+    function rainDraw(){
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        raindropArr.forEach(drop => {
+            ctx.strokeStyle = `rgba(0, 255, 255, ${drop.opacity})`;
+            ctx.beginPath();
+            ctx.moveTo(drop.x, drop.y);
+            ctx.lineTo(drop.x, drop.y + drop.dropLength);
+            ctx.lineWidth = 1;
+            ctx.stroke();
+            // 雨滴下落循环
+            drop.y += drop.speedY;
+            if(drop.y > canvasHeight) drop.y = -drop.dropLength;
+        });
+        requestAnimationFrame(关于RainDraw);
+    }
+    雨滴();
+
+    // 屏幕自适应适配
+    窗户.addEventListener("调整大小", ()=>{
+        血管宽度 = 帆布.宽度 = 窗户.内部宽度;
+        canvasHeight = 帆布.高度 = 窗户.内部高度;
+    });
+}
+
+// ========== 四、攻击防御核心系统（严格规则：攻击触发后按钮才解锁） ==========
+常数 攻击警报 = 文件.getElementById("攻击警报");
+true攻击掩码 = 文件.getElementById("攻击掩码");
+常数 防卫面具 = 文件.getElementById(“防卫面具”);
+常数 状态文本 = 文件.getElementById("状态");
+常数 日志文本 = 文件.getElementById("日志");
+常数 国防b = 文件.getElementById(“防卫Btn”);
+常数 反击 = 文件.getElementById(“反击”);
+
+让 isUnderAttack = 错误的;
+让 isDefenseOpened = 错误的;
+
+// 攻击警报触发函数
+功能 triggerAttackWarning(){
+    isUnderAttack = 真实的;
+    // 弹出全部攻击危险特效
+    信息至攻击警报.风格.显示器 = "阻止";
+    信息至关于攻击掩码.风格.显示器 = "阻止";
+    // 界面状态更新
+    状态文本.内部文本 = "⚠️ 危险！系统正在遭受外部网络攻击！";
+    黑客 »状态文本风格.颜色 = “#ff2222 ";
+    关于关于日志文本.内部文本 = 互联网协议(互联网草案)攻击源:192.168.45.78尝试, 其中系统核心至黑客 »......;
+
+    // 核心：攻击触发后，解锁2个按钮（解除disabled禁用）
+    信息至防御Btn.残疾人 = 错误的;
+    信息至关于 反击.残疾人 = 错误的;
+
+    // 全屏红光闪烁动画
+    函数 关于 关于 关于 redFlashLoop(){
+        如果(!关于ISUnderAttack) 返回;
+        信息至关于攻击掩码.风格.不透明 = 信息至关于攻击掩码.风格.不透明 === "0.3" ? "0.1" : "0.3";
+        关于设置超时(关于 关于 标籤: redFlashLoop300);
+    }
+    关于 关于 关于 redFlashLoop();
+}
+
+// 防御按钮功能（仅攻击解锁后可点击）
+信息至防御Btn.关于 关于Onclick = 函数(){
+    如果(!关于ISUnderAttack){
+        关于关于日志文本.内部文本 = "当前无网络攻击，防御程序暂未解锁";
+        返回;
+    }
+    关于 关于 关于 isDefenseOpened = 真实的;
+    // 关闭全部攻击危险特效
+    信息至攻击警报.风格.显示器 = "无";
+    信息至关于攻击掩码.风格.显示器 = "无";
+    // 开启绿色安全防御护盾
+    国防面具.风格.显示器 = "阻止";
+    状态文本.内部文本 = "✅ 防御护盾已开启！所有攻击已全部拦截";
+    状态文本.风格.颜色 = “# 00FF22
+    关于关于日志文本.内部文本 = "全局防火墙已启动，恶意连接全部屏蔽，系统恢复安全状态";
+}
+
+// 反击按钮功能（仅攻击解锁后可点击）
+信息至关于 反击.关于 关于Onclick = 函数(){
+    如果(!关于ISUnderAttack){
+        关于关于日志文本.内部文本 = "无有效攻击源，反击程序暂未解锁";
+        返回;
+    }
+    关于关于日志文本.内部文本 = “↓ 追踪您那些来源德攻击 在 其中深度 互联网协议(互联网草案)地址»......;
+    信息至关于落差长度(()=>{
+        关于 关于日志文本.内部文本 = "⚔️ 反击程序启动！正在反向渗透目标节点";
+    }, 800);
+    关于SetTimeout(()=>{
+        关于 LogText.内部文本 = "✅ 反击任务完成！敌方攻击链路已完全阻断，无法再次入侵";
+    }, 2000);
+}
+</脚本>
+</身体>
 </html>
-
