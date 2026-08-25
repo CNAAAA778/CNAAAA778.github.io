@@ -1,243 +1,266 @@
 
-    if not game:IsLoaded() then
-        game.Loaded:Wait()
+if not game:IsLoaded() then
+    game.Loaded:Wait()
+end
+
+if not isfolder("TK/XA-Hub") then
+    makefolder("TK-Hub")
+end
+if not isfolder("TK-Hub/Fluent") then
+    makefolder("TK-Hub/Fluent")
+end
+if not isfile("TK-Hub/Fluent/AutoFindMoneyPrinter.txt") then
+    writefile("/TKXA-Hub/Fluent/AutoFindMoneyPrinter.txt", "false")
+end
+
+local autoFind = readfile("XA-Hub/Fluent/AutoFindMoneyPrinter.txt")
+if autoFind == "true" then
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Games/俄亥俄州_印钞机.lua"))()
+    return
+end
+
+local FluentResult = {
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Library/Fluent.lua"))()
+}
+local Fluent = loadstring(FluentResult[2]:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Library/Fluent.lua"))()
+local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/ESPLibrary.lua"))()
+ESP.ESPFolder.Parent = workspace
+
+local Lighting = game:GetService("Lighting")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local ProximityPromptService = game:GetService("ProximityPromptService")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Character = LocalPlayer.Character
+
+if not Character then return end
+
+local Humanoid = Character:WaitForChild("Humanoid", 5)
+local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart", 5)
+local AirdropCallback = Instance.new("BindableFunction")
+
+local RemotesModule = require(ReplicatedStorage.devv.client.Helpers.remotes.Signal)
+local Remotes = debug.getupvalue(RemotesModule.FireServer, 1)
+local ClientReplicator = require(ReplicatedStorage.devv.client.Helpers.objectProperties.ClientReplicator)
+local Inventory = require(ReplicatedStorage.devv.client.Objects.v3item.modules.inventory)
+local StateData = require(ReplicatedStorage.devv).load("state").data
+
+local SelectedTarget = nil
+local Whitelist = {
+    2953444466,
+    5509421902
+}
+local ItemsOnSaleList = {}
+local Locations = {
+    ["军械库"] = CFrame.new(671.68688964844, 6.2448601722717, -655.50268554688),
+    ["银行"] = CFrame.new(1091.5296630859, 6.0434188842773, -457.62033081055),
+    ["珠宝店"] = CFrame.new(1543.3168945312, 6.2433180809021, -682.63525390625),
+    ["警察局"] = CFrame.new(655.10638427734, 9.035834312439, -903.20697021484),
+    ["军事基地"] = CFrame.new(835.84875488281, 25.234800338745, -1327.0417480469),
+    ["医院"] = CFrame.new(1112.4508056641, 6.0434203147888, -973.91772460938),
+    ["游乐场"] = CFrame.new(1170.8796386719, 13.850684165955, -25.795112609863)
+}
+
+task.spawn(function()
+    for _, item in pairs(workspace.ItemsOnSale:GetChildren()) do
+        ItemsOnSaleList[item.Name] = item.Name
     end
-    
-    if not isfolder("XA-Hub") then
-        makefolder("XA-Hub")
-    end
-    if not isfolder("XA-Hub/Fluent") then
-        makefolder("XA-Hub/Fluent")
-    end
-    if not isfile("XA-Hub/Fluent/AutoFindMoneyPrinter.txt") then
-        writefile("XA-Hub/Fluent/AutoFindMoneyPrinter.txt", "false")
-    end
-    
-    local autoFind = readfile("XA-Hub/Fluent/AutoFindMoneyPrinter.txt")
-    if autoFind == "true" then
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Games/俄亥俄州_印钞机.lua"))()
-        return
-    end
-    
-    local FluentResult = {
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Library/Fluent.lua"))()
-    }
-    local Fluent = loadstring(FluentResult[2]:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/Library/Fluent.lua"))()
-    local ESP = loadstring(game:HttpGet("https://raw.githubusercontent.com/Xingtaiduan/Script/refs/heads/main/ESPLibrary.lua"))()
-    ESP.ESPFolder.Parent = workspace
-    
-    local Lighting = game:GetService("Lighting")
-    local ReplicatedStorage = game:GetService("ReplicatedStorage")
-    local ProximityPromptService = game:GetService("ProximityPromptService")
-    local Players = game:GetService("Players")
-    local RunService = game:GetService("RunService")
-    local UserInputService = game:GetService("UserInputService")
-    local LocalPlayer = Players.LocalPlayer
-    local Character = LocalPlayer.Character
-    
-    if not Character then return end
-    
-    local Humanoid = Character:WaitForChild("Humanoid", 5)
-    local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart", 5)
-    local AirdropCallback = Instance.new("BindableFunction")
-    
-    local RemotesModule = require(ReplicatedStorage.devv.client.Helpers.remotes.Signal)
-    local Remotes = debug.getupvalue(RemotesModule.FireServer, 1)
-    local ClientReplicator = require(ReplicatedStorage.devv.client.Helpers.objectProperties.ClientReplicator)
-    local Inventory = require(ReplicatedStorage.devv.client.Objects.v3item.modules.inventory)
-    local StateData = require(ReplicatedStorage.devv).load("state").data
-    
-    local SelectedTarget = nil
-    local Whitelist = {
-        2953444466,
-        5509421902
-    }
-    local ItemsOnSaleList = {}
-    local Locations = {
-        ["军械库"] = CFrame.new(671.68688964844, 6.2448601722717, -655.50268554688),
-        ["银行"] = CFrame.new(1091.5296630859, 6.0434188842773, -457.62033081055),
-        ["珠宝店"] = CFrame.new(1543.3168945312, 6.2433180809021, -682.63525390625),
-        ["警察局"] = CFrame.new(655.10638427734, 9.035834312439, -903.20697021484),
-        ["军事基地"] = CFrame.new(835.84875488281, 25.234800338745, -1327.0417480469),
-        ["医院"] = CFrame.new(1112.4508056641, 6.0434203147888, -973.91772460938),
-        ["游乐场"] = CFrame.new(1170.8796386719, 13.850684165955, -25.795112609863)
-    }
-    
-    task.spawn(function()
-        for _, item in pairs(workspace.ItemsOnSale:GetChildren()) do
-            ItemsOnSaleList[item.Name] = item.Name
+
+    for _, conn in pairs(getconnections(game:GetService("RunService").Heartbeat)) do
+        local fn = conn.Function
+        if fn and getfenv(fn).script == ReplicatedStorage.devv.client.Handlers.ClientValidate then
+            conn:Disable()
+            game.StarterGui:SetCore("SendNotification", {
+                Title = "TK：提示",
+                Text = "飞行/速度封禁绕过成功"
+            })
         end
-    
-        for _, conn in pairs(getconnections(game:GetService("RunService").Heartbeat)) do
-            local fn = conn.Function
-            if fn and getfenv(fn).script == ReplicatedStorage.devv.client.Handlers.ClientValidate then
-                conn:Disable()
-                game.StarterGui:SetCore("SendNotification", {
-                    Title = "XA：提示",
-                    Text = "飞行/速度封禁绕过成功"
-                })
-            end
-        end
-    
-        getgenv().fixedremotes = {}
-        for name, remote in next, RemotesModule do
-            local upval = debug.getupvalue(remote, 1)
-            if upval then
-                getgenv().fixedremotes[name] = upval
-            end
-        end
-    end)
-    
-    local function FindPlayer(input)
-        local query = input:gsub("%s+", "")
-        for _, player in pairs(Players:GetPlayers()) do
-            if player.Name:lower():match("^" .. query:lower()) then
-                return player
-            end
-            if player.DisplayName:lower():match("^" .. query:lower()) then
-                return player
-            end
-        end
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "XA：错误",
-            Text = "未找到玩家"
-        })
-        return nil
     end
-    
-    local function RefreshItemESP()
-        for _, item in pairs(workspace.Game.Entities.ItemPickup:GetChildren()) do
-            for _, part in pairs(item:GetDescendants()) do
-                if part:IsA("MeshPart") then
-                    for _, prompt in pairs(part:GetDescendants()) do
-                        if prompt:IsA("ProximityPrompt") then
-                            ESP.Add({
-                                Object = part,
-                                Name = prompt.ObjectText,
-                                Color = Color3.new(1, 1, 1),
-                                TextSize = 12,
-                                Tag = "ItemESP",
-                                ShowDistance = false
-                            })
-                        end
+
+    getgenv().fixedremotes = {}
+    for name, remote in next, RemotesModule do
+        local upval = debug.getupvalue(remote, 1)
+        if upval then
+            getgenv().fixedremotes[name] = upval
+        end
+    end
+end)
+
+local function FindPlayer(input)
+    local query = input:gsub("%s+", "")
+    for _, player in pairs(Players:GetPlayers()) do
+        if player.Name:lower():match("^" .. query:lower()) then
+            return player
+        end
+        if player.DisplayName:lower():match("^" .. query:lower()) then
+            return player
+        end
+    end
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "TK：无",
+        Text = "未找到玩家"
+    })
+    return nil
+end
+
+local function RefreshItemESP()
+    for _, item in pairs(workspace.Game.Entities.ItemPickup:GetChildren()) do
+        for _, part in pairs(item:GetDescendants()) do
+            if part:IsA("MeshPart") then
+                for _, prompt in pairs(part:GetDescendants()) do
+                    if prompt:IsA("ProximityPrompt") then
+                        ESP.Add({
+                            Object = part,
+                            Name = prompt.ObjectText,
+                            Color = Color3.new(1, 1, 1),
+                            TextSize = 12,
+                            Tag = "ItemESP",
+                            ShowDistance = false
+                        })
                     end
                 end
             end
         end
     end
-    
-    local OriginalNamecall
-    OriginalNamecall = hookmetamethod(game, "__namecall", function(self, ...)
-        local args = {...}
-        local method = getnamecallmethod()
-    
-        if checkcaller() then
-            return OriginalNamecall(self, ...)
-        end
-    
-        if method == "FireServer" and self == Remotes.meleeItemHit then
-            if tostring(args[1]) == "player" and not table.find(Whitelist, args[2].hitPlayerId) then
-                if Fluent.Options.OnePunch.Value then
-                    if not string.find(tostring(args[2].meleeType), "swing") then
-                        args[2].meleeType = "meleemegapunch"
-                    end
+end
+
+local OriginalNamecall
+OriginalNamecall = hookmetamethod(game, "__namecall", function(self, ...)
+    local args = {...}
+    local method = getnamecallmethod()
+
+    if checkcaller() then
+        return OriginalNamecall(self, ...)
+    end
+
+    if method == "FireServer" and self == Remotes.meleeItemHit then
+        if tostring(args[1]) == "player" and not table.find(Whitelist, args[2].hitPlayerId) then
+            if Fluent.Options.OnePunch.Value then
+                if not string.find(tostring(args[2].meleeType), "swing") then
+                    args[2].meleeType = "meleemegapunch"
                 end
-                if Fluent.Options.OneSwing.Value then
-                    if string.find(tostring(args[2].meleeType), "swing") then
-                        args[2].meleeType = "meleemegaswing"
-                    end
-                end
-                return OriginalNamecall(self, unpack(args))
             end
-        end
-    
-        if Fluent.Options.Hitbox.Value and method == "FireServer" and self == Remotes.projectileHit then
-            local hitPart = args[2].hitPart
-            local model = hitPart:FindFirstAncestorOfClass("Model")
-            local hitPlayer = Players:GetPlayerFromCharacter(model)
-            if model and hitPlayer then
-                args[2].hitPart = model.Hitbox["Head_Hitbox"]
-                args[2].hitPlayerId = hitPlayer.UserId
-                args[2].hitSize = args[2].hitPart.Size
-                args[2].pos = args[2].hitPart.Position
+            if Fluent.Options.OneSwing.Value then
+                if string.find(tostring(args[2].meleeType), "swing") then
+                    args[2].meleeType = "meleemegaswing"
+                end
             end
             return OriginalNamecall(self, unpack(args))
         end
-    
-        return OriginalNamecall(self, ...)
+    end
+
+    if Fluent.Options.Hitbox.Value and method == "FireServer" and self == Remotes.projectileHit then
+        local hitPart = args[2].hitPart
+        local model = hitPart:FindFirstAncestorOfClass("Model")
+        local hitPlayer = Players:GetPlayerFromCharacter(model)
+        if model and hitPlayer then
+            args[2].hitPart = model.Hitbox["Head_Hitbox"]
+            args[2].hitPlayerId = hitPlayer.UserId
+            args[2].hitSize = args[2].hitPart.Size
+            args[2].pos = args[2].hitPart.Position
+        end
+        return OriginalNamecall(self, unpack(args))
+    end
+
+    return OriginalNamecall(self, ...)
+end)
+
+Fluent:GiveSignal(workspace.Game.Entities.ItemPickup.DescendantAdded:Connect(function(obj)
+    if Fluent.Options.SItemsFarm.Value and obj:IsA("ProximityPrompt") then
+        local v = Fluent.Options.SelectedItems.Value
+        local match = (v["红卡"] and obj.ObjectText == "Military Armory Keycard")
+            or (v["蓝卡"] and obj.ObjectText == "Police Armory Keycard")
+            or (v["印钞机"] and obj.ObjectText == "Money Printer")
+            or (v["气球"] and obj.ObjectText:match("Balloon"))
+        if match then
+            local savedCF = HumanoidRootPart.CFrame
+            Character:PivotTo(obj.Parent:GetPivot())
+            task.wait()
+            for i = 1, 5 do
+                fireproximityprompt(obj)
+                task.wait(0.1)
+            end
+            if Fluent.Options.ReturnOnTeleport.Value then
+                Character:PivotTo(savedCF)
+            end
+        end
+    end
+end))
+
+Fluent:GiveSignal(workspace.Game.Entities.ItemPickup.ChildAdded:Connect(function()
+    if Fluent.Options.ItemESP.Value then
+        ESP.Clear("ItemESP")
+        RefreshItemESP()
+    end
+end))
+
+Fluent:GiveSignal(workspace.Game.Airdrops.ChildAdded:Connect(function(airdrop)
+    if not Fluent.Options.NotifyAirdrop.Value then return end
+    game.StarterGui:SetCore("SendNotification", {
+        Title = "空投已刷新",
+        Text = "是否传送到空投？",
+        Duration = 5,
+        Button1 = "是",
+        Button2 = "否",
+        Callback = AirdropCallback
+    })
+    AirdropCallback.OnInvoke = function(response)
+        if response == "是" then
+            Character:PivotTo(airdrop:GetPivot())
+        end
+    end
+end))
+
+Fluent:GiveSignal(workspace.Game.Entities.CashBundle.ChildAdded:Connect(function(obj)
+    if not Fluent.Options.CashESP.Value then return end
+    task.delay(0.2, function()
+        local intVal = obj:FindFirstChildOfClass("IntValue")
+        if intVal then
+            ESP.Add(obj, intVal.Value, Color3.fromRGB(23, 255, 42), 10, "CashESP")
+        end
     end)
-    
-    Fluent:GiveSignal(workspace.Game.Entities.ItemPickup.DescendantAdded:Connect(function(obj)
-        if Fluent.Options.SItemsFarm.Value and obj:IsA("ProximityPrompt") then
-            local v = Fluent.Options.SelectedItems.Value
-            local match = (v["红卡"] and obj.ObjectText == "Military Armory Keycard")
-                or (v["蓝卡"] and obj.ObjectText == "Police Armory Keycard")
-                or (v["印钞机"] and obj.ObjectText == "Money Printer")
-                or (v["气球"] and obj.ObjectText:match("Balloon"))
-            if match then
-                local savedCF = HumanoidRootPart.CFrame
-                Character:PivotTo(obj.Parent:GetPivot())
-                task.wait()
-                for i = 1, 5 do
-                    fireproximityprompt(obj)
-                    task.wait(0.1)
+end))
+
+Fluent:GiveSignal(LocalPlayer.CharacterAdded:Connect(function(char)
+    Character = char
+    Humanoid = char:WaitForChild("Humanoid")
+    HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
+    if Fluent.Options.AutoEquip.Value then
+        Remotes.FireServer("equip", Inventory.getFromName("Fists").guid)
+    end
+end))
+
+Fluent:GiveSignal(RunService.RenderStepped:Connect(function()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local char = player.Character
+            if not char then continue end
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            if not hum or not hrp then continue end
+            if char:FindFirstChild("ForceField") then continue end
+            if table.find(Whitelist, player.UserId) then continue end
+
+            if Fluent.Options.KillAura.Value then
+                local dist = (HumanoidRootPart.Position - hrp.Position).Magnitude
+                if dist < 35 and hum.Health > 5 then
+                    Remotes.FireServer("meleeItemHit", "player", {
+                        meleeType = "meleemegapunch",
+                        hitPlayerId = player.UserId
+                    })
                 end
-                if Fluent.Options.ReturnOnTeleport.Value then
-                    Character:PivotTo(savedCF)
+            end
+
+            if Fluent.Options.StompAura.Value then
+                if ClientReplicator.Get(player, "knocked") then
+                    local dist = (HumanoidRootPart.Position - hrp.Position).Magnitude
+                    if dist < 30 then
+                        Remotes.FireServer("stomp", player)
+                    end
                 end
             end
-        end
-    end))
-    
-    Fluent:GiveSignal(workspace.Game.Entities.ItemPickup.ChildAdded:Connect(function()
-        if Fluent.Options.ItemESP.Value then
-            ESP.Clear("ItemESP")
-            RefreshItemESP()
-        end
-    end))
-    
-    Fluent:GiveSignal(workspace.Game.Airdrops.ChildAdded:Connect(function(airdrop)
-        if not Fluent.Options.NotifyAirdrop.Value then return end
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "空投已刷新",
-            Text = "是否传送到空投？",
-            Duration = 5,
-            Button1 = "是",
-            Button2 = "否",
-            Callback = AirdropCallback
-        })
-        AirdropCallback.OnInvoke = function(response)
-            if response == "是" then
-                Character:PivotTo(airdrop:GetPivot())
-            end
-        end
-    end))
-    
-    Fluent:GiveSignal(workspace.Game.Entities.CashBundle.ChildAdded:Connect(function(obj)
-        if not Fluent.Options.CashESP.Value then return end
-        task.delay(0.2, function()
-            local intVal = obj:FindFirstChildOfClass("IntValue")
-            if intVal then
-                ESP.Add(obj, intVal.Value, Color3.fromRGB(23, 255, 42), 10, "CashESP")
-            end
-        end)
-    end))
-    
-    Fluent:GiveSignal(LocalPlayer.CharacterAdded:Connect(function(char)
-        Character = char
-        Humanoid = char:WaitForChild("Humanoid")
-        HumanoidRootPart = char:WaitForChild("HumanoidRootPart")
-        if Fluent.Options.AutoEquip.Value then
-            Remotes.FireServer("equip", Inventory.getFromName("Fists").guid)
-        end
-    end))
-    
-    Fluent:GiveSignal(RunService.RenderStepped:Connect(function()
-        for _, player in pairs(Players:GetPlayers()) do
-            if player ~= LocalPlayer then
-                local char = player.Character
-                if not char then continue end
-                local hum = char:FindFirstChildOfClass("Humanoid")
-                local hrp = char:FindFirstChild("HumanoidRootPart")
-                if not hum or not hrp then continue end
-        
+
+            if Fluent.Options.GrabAura.Value then
+                if Cl
